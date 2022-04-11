@@ -82,7 +82,7 @@ public class RestAssuredTests {
     }
 
     @Test
-    public void userUpdateViaPatchTest(){
+    public void userUpdateViaPatchTest() {
         UpdateUserModel updateUserModel = new UpdateUserModel();
         updateUserModel.setName(GenerateFakeMessage.getFirstName());
         updateUserModel.setJob(GenerateFakeMessage.getFirstName());
@@ -102,9 +102,8 @@ public class RestAssuredTests {
     }
 
 
-
     @Test
-    public void userDeleteTest(){
+    public void userDeleteTest() {
         RestAssured
                 .given()
                 .log()
@@ -118,10 +117,13 @@ public class RestAssuredTests {
     }
 
     @Test
-    public void successfulRegisterTest(){
+    public void successfulRegisterTest() {
+        JsonPath expectedJson = new JsonPath(new File("src/test/resources/token.json"));
         UpdateUserModel updateUserModel = new UpdateUserModel();
-        updateUserModel.setName(GenerateFakeMessage.getFirstName());
-        updateUserModel.setJob(GenerateFakeMessage.getFirstName());
+//        updateUserModel.setEmail(GenerateFakeMessage.getEmail());
+//        updateUserModel.setPassword(GenerateFakeMessage.getPassword());
+        updateUserModel.setEmail("eve.holt@reqres.in");
+        updateUserModel.setPassword("pistol");
         RestAssured
                 .given()
                 .contentType(ContentType.JSON)
@@ -130,19 +132,20 @@ public class RestAssuredTests {
                 .and()
                 .body(updateUserModel)
                 .when()
-                .patch("https://reqres.in/api/users/2")
+                .post("https://reqres.in/api/register")
                 .then()
                 .log()
                 .all()
+                .body("", equalTo(expectedJson.getMap("")))
                 .statusCode(200);
 
     }
 
     @Test
-    public void unsuccessfulRegisterTest(){
+    public void unsuccessfulRegisterTest() {
         UpdateUserModel updateUserModel = new UpdateUserModel();
-        updateUserModel.setName(GenerateFakeMessage.getFirstName());
-        updateUserModel.setJob(GenerateFakeMessage.getFirstName());
+        JsonPath expectedJson = new JsonPath(new File("src/test/resources/missingpassword.json"));
+        updateUserModel.setEmail(GenerateFakeMessage.getEmail());
         RestAssured
                 .given()
                 .contentType(ContentType.JSON)
@@ -151,11 +154,73 @@ public class RestAssuredTests {
                 .and()
                 .body(updateUserModel)
                 .when()
-                .patch("https://reqres.in/api/users/2")
+                .post("https://reqres.in/api/register")
                 .then()
                 .log()
                 .all()
+                .body("", equalTo(expectedJson.getMap("")))
+                .statusCode(400);
+
+    }
+
+    @Test
+    public void successfulLoginTest() {
+        UpdateUserModel updateUserModel = new UpdateUserModel();
+        JsonPath expectedJson = new JsonPath(new File("src/test/resources/logintoken.json"));
+        updateUserModel.setEmail("eve.holt@reqres.in");
+        updateUserModel.setPassword("cityslicka");
+        RestAssured
+                .given()
+                .contentType(ContentType.JSON)
+                .log()
+                .all()
+                .and()
+                .body(updateUserModel)
+                .when()
+                .post("https://reqres.in/api/login")
+                .then()
+                .log()
+                .all()
+                .body("", equalTo(expectedJson.getMap("")))
                 .statusCode(200);
 
     }
+
+    @Test
+    public void unsuccessfulLoginTest() {
+        UpdateUserModel updateUserModel = new UpdateUserModel();
+        JsonPath expectedJson = new JsonPath(new File("src/test/resources/missingpassword.json"));
+        updateUserModel.setEmail(GenerateFakeMessage.getEmail());
+        RestAssured
+                .given()
+                .contentType(ContentType.JSON)
+                .log()
+                .all()
+                .and()
+                .body(updateUserModel)
+                .when()
+                .post("https://reqres.in/api/login")
+                .then()
+                .log()
+                .all()
+                .body("", equalTo(expectedJson.getMap("")))
+                .statusCode(400);
+    }
+
+    @Test
+    public void delayedResponseTest() {
+        JsonPath expectedJson = new JsonPath(new File("src/test/resources/delayedresponse.json"));
+        RestAssured
+                .given()
+                .log()
+                .all()
+                .when()
+                .get("https://reqres.in/api/users?delay=3")
+                .then()
+                .log()
+                .all()
+                .body("", equalTo(expectedJson.getMap("")));
+
+    }
+
 }

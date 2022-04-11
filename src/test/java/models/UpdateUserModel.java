@@ -6,4 +6,6 @@ import lombok.Data;
 public class UpdateUserModel {
     private String name;
     private String job;
+    private String email;
+    private String password;
 }
